@@ -25,12 +25,17 @@ const registerUser = async (req, res) => {
             password: hashedPassword
         };
         users.push(newUser);
+const emailResponse =
+    process.env.NODE_ENV === "production"
+        ? encrypt(newUser.email)
+        : newUser.email;
+
 res.status(201).json({
     message: "User registered successfully.",
     user: {
         id: newUser.id,
         name: newUser.name,
-        email: encrypt(newUser.email)
+        email: emailResponse
     }
 });
     } catch (error) {
