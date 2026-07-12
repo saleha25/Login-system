@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const users = require("../models/userModel");
+const { readUsers, writeUsers } = require("../utils/excelHelper");
 const { encrypt } = require("../utils/encryption");
 
 // Register User
@@ -32,9 +32,9 @@ const registerUser = async (req, res) => {
                 message: "All fields are required."
             });
         }
+const users = readUsers();
 
-        // Check if email already exists
-        const existingUser = users.find(user => user.email === email);
+const existingUser = users.find(user => user.email === email);
 
         if (existingUser) {
             return res.status(400).json({
@@ -59,6 +59,7 @@ const registerUser = async (req, res) => {
         };
 
         users.push(newUser);
+        writeUsers(users);
 
         // Encrypt email only in production
         const emailResponse =
@@ -100,7 +101,9 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const user = users.find(user => user.email === email);
+        const users = readUsers();
+
+const user = users.find(user => user.email === email);
 
         if (!user) {
             return res.status(404).json({
@@ -117,15 +120,16 @@ const loginUser = async (req, res) => {
         }
 
         const token = jwt.sign(
-            {
-                id: user.id,
-                email: user.email
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "1h"
-            }
-        );
+    {
+        id: user.id,
+        email: user.email,
+        role: user.role
+    },
+    process.env.JWT_SECRET,
+    {
+        expiresIn: "1h"
+    }
+);
 
         res.status(200).json({
             message: "Login successful.",
