@@ -1,3 +1,5 @@
+
+const upload = require("../middleware/uploadMiddleware");
 const express = require("express");
 const router = express.Router();
 const {
@@ -10,8 +12,10 @@ const {
     validateRegister,
     validate
 } = require("../middleware/validationMiddleware");
+
 router.post(
     "/register",
+    upload.single("license"),
     validateRegister,
     validate,
     registerUser
