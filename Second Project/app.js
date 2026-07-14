@@ -7,7 +7,10 @@ const roleRoutes = require("./routes/roleRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const permissionRoutes = require("./routes/permissionRoutes");
-
+const userLogRoutes = require("./routes/userLogRoutes");
+const documentRoutes = require("./routes/documentRoutes");
+const rolePermissionRoutes = require("./routes/rolePermissionRoutes");
+const passwordResetRoutes = require("./routes/passwordResetRoutes");
 dotenv.config();
 
 const app = express();
@@ -27,6 +30,10 @@ app.use("/api/roles", roleRoutes);
 app.use("/api/organizations", organizationRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/permissions",permissionRoutes);
+app.use("/api/user-logs", userLogRoutes);
+app.use("/api/documents", documentRoutes);
+app.use("/api/role-permissions", rolePermissionRoutes);
+app.use("/api/password-resets", passwordResetRoutes);
 app.use(errorHandler);
 
 sequelize.sync({alter:true})
