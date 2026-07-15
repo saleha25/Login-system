@@ -22,7 +22,24 @@ const Session = sequelize.define(
 
         expiresAt: {
             type: DataTypes.DATE
+        },
+
+        logoutTime: {
+            type: DataTypes.DATE
+        },
+
+        ipAddress: {
+            type: DataTypes.STRING
+        },
+
+        device: {
+            type: DataTypes.STRING
+        },
+
+        browser: {
+            type: DataTypes.STRING
         }
+
     },
     {
         tableName: "sessions",
