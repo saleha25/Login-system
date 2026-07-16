@@ -10,6 +10,8 @@ const Document = require("./Document");
 const Permission = require("./Permission");
 const RolePermission = require("./RolePermission");
 const PasswordReset = require("./PasswordReset");
+const JobLog = require("./JobLog");
+const Task = require("./Task");
 Role.hasMany(User, {
     foreignKey: "roleId"
 });
@@ -80,5 +82,7 @@ module.exports = {
     Document,
     Permission,
     RolePermission,
-    PasswordReset
+    PasswordReset,
+      JobLog,
+      Task
 };
