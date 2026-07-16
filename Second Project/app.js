@@ -1,5 +1,9 @@
 const express = require("express");//Express is a web framework for Node.js.
 const dotenv = require("dotenv");//dotenv loads environment variables from a .env file into process.env
+require("./cron/systemHealthCron");
+require("./cron/userCleanupCron");
+require("./cron/reminderCron");
+require("./cron/passwordResetCleanupCron");
 const errorHandler = require("./middleware/errorMiddleware");
 const { sequelize } = require("./models");
 const crudUserRoutes = require("./routes/crudUserRoutes");
