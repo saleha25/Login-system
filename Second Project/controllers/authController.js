@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { readUsers, writeUsers } = require("../utils/excelHelper");
 const { encrypt } = require("../utils/encryption");
-
+const welcomeEmailQueue = require("../queues/welcomeEmailQueue");
 // Register User
 const registerUser = async (req, res) => {
     try {
@@ -60,6 +60,11 @@ const existingUser = users.find(user => user.email === email);
 
         users.push(newUser);
         writeUsers(users);
+        // Add Welcome Email Job to Queue
+await welcomeEmailQueue.add("sendWelcomeEmail", {
+    email: newUser.email,
+    name: newUser.name,
+});
 
         // Encrypt email only in production
         const emailResponse =

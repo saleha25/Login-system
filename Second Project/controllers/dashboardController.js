@@ -7,6 +7,7 @@ const {
 } = require("../models");
 
 const { Op } = require("sequelize");
+const redis = require("../config/cache");
 
 const getOrganizationDashboard = async (req, res) => {
 
@@ -14,7 +15,24 @@ const getOrganizationDashboard = async (req, res) => {
 
         const organizationId = req.params.id;
 
-        // Organization Details
+        // Redis Cache Key
+        const cacheKey = `dashboard:${organizationId}`;
+
+        // Check Cache
+        const cachedDashboard = await redis.get(cacheKey);
+
+        if (cachedDashboard) {
+
+            console.log("Returning Dashboard from Cache");
+
+            return res.status(200).json({
+                source: "Cache",
+                ...JSON.parse(cachedDashboard)
+            });
+
+        }
+
+        // Fetch Organization
         const organization = await Organization.findByPk(organizationId);
 
         if (!organization) {
@@ -24,16 +42,11 @@ const getOrganizationDashboard = async (req, res) => {
         }
 
         // Total Users
-        const totalUsers = await User.count({
-            where: {
-                organizationId: organizationId
-            }
-        });
+        const totalUsers = await User.count();
 
         // Total Active Users
         const totalActiveUsers = await User.count({
             where: {
-                organizationId: organizationId,
                 status: "Active"
             }
         });
@@ -46,12 +59,11 @@ const getOrganizationDashboard = async (req, res) => {
 
         // Users Registered Today
         const today = new Date();
-        today.setHours(0,0,0,0);
+        today.setHours(0, 0, 0, 0);
 
         const usersRegisteredToday = await User.count({
-            where:{
-                organizationId: organizationId,
-                createdAt:{
+            where: {
+                createdAt: {
                     [Op.gte]: today
                 }
             }
@@ -59,19 +71,17 @@ const getOrganizationDashboard = async (req, res) => {
 
         // Latest Registered User
         const latestUser = await User.findOne({
-            where:{
-                organizationId: organizationId
-            },
-            order:[
-                ["createdAt","DESC"]
+            order: [
+                ["createdAt", "DESC"]
             ]
         });
 
-        res.status(200).json({
+        // Dashboard Data
+        const dashboardData = {
 
             organization,
 
-            statistics:{
+            statistics: {
                 totalUsers,
                 totalActiveUsers,
                 totalRoles,
@@ -81,18 +91,33 @@ const getOrganizationDashboard = async (req, res) => {
 
             latestUser
 
+        };
+
+        // Cache for 5 Minutes
+        await redis.set(
+            cacheKey,
+            JSON.stringify(dashboardData),
+            "EX",
+            300
+        );
+
+        console.log("Dashboard Cached for 5 Minutes");
+
+        res.status(200).json({
+            source: "Database",
+            ...dashboardData
         });
 
     } catch (error) {
 
         res.status(500).json({
-            message:error.message
+            message: error.message
         });
 
     }
 
 };
 
-module.exports={
+module.exports = {
     getOrganizationDashboard
 };

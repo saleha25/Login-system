@@ -29,6 +29,7 @@ const duplicateEmailRoutes =require("./routes/duplicateEmailRoutes");
 const userActivityRoutes =require("./routes/userActivityRoutes");
 const globalSearchRoutes =require("./routes/globalSearchRoutes");
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 dotenv.config();
 
 const app = express();
@@ -66,6 +67,7 @@ app.use("/api/duplicate-emails",duplicateEmailRoutes);
 app.use("/api/user-activity",userActivityRoutes);
 app.use("/api/global-search",globalSearchRoutes);
 app.use("/api/admin-dashboard", adminDashboardRoutes);
+app.use("/api/report", reportRoutes);
 app.use(errorHandler);
 
 sequelize.sync({alter:true})

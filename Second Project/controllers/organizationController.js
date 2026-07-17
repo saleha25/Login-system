@@ -1,5 +1,5 @@
 const { Organization } = require("../models");
-
+const redis = require("../config/cache");
 // CREATE Organization
 const createOrganization = async (req, res) => {
     try {
@@ -44,6 +44,23 @@ const getAllOrganizations = async (req, res) => {
 const getOrganizationById = async (req, res) => {
     try {
 
+        const cacheKey = `organization:${req.params.id}`;
+
+        const cachedOrganization = await redis.get(cacheKey);
+
+        if (cachedOrganization) {
+
+            console.log("Returning Organization from Cache");
+
+            return res.status(200).json({
+                source: "Cache",
+                organization: JSON.parse(cachedOrganization)
+            });
+
+        }
+
+        console.log("Fetching Organization from Database");
+
         const organization = await Organization.findByPk(req.params.id);
 
         if (!organization) {
@@ -52,7 +69,17 @@ const getOrganizationById = async (req, res) => {
             });
         }
 
-        res.status(200).json(organization);
+        await redis.set(
+            cacheKey,
+            JSON.stringify(organization),
+            "EX",
+            60
+        );
+
+        res.status(200).json({
+            source: "Database",
+            organization
+        });
 
     } catch (error) {
 
@@ -76,6 +103,9 @@ const updateOrganization = async (req, res) => {
         }
 
         await organization.update(req.body);
+        await redis.del(`organization:${req.params.id}`);
+
+console.log("Organization Cache Invalidated");
 
         res.status(200).json({
             message: "Organization updated successfully.",
